@@ -171,10 +171,13 @@ function loadRoutes(APIDir, APIName, reload){
             if(file.split('.').pop()=='js'){
               // console.log(fileToLoad)
               //Load Route File
-              try{ var RF = _.clone( require(fileToLoad) ); }
+              try{
+                var RF = _.clone( require(fileToLoad) );
+                //to enable updates on reload, we must clear this require
+                clearRequire(fileToLoad);
+              }
               catch(e){ pinoLogger(loggerOpts, pinoPretty).logger.error(e); }
-              //to enable updates on reload, we must clear this require
-              // clearRequire(fileToLoad);
+
 
               if(_.has(globals,'middleware')){
                 MIDDLEWARE = {
