@@ -35,6 +35,8 @@ var apiOptions = {
   "apiDir" : apiDir,
   "apiName" : apiName,
   "apiPort" : 8082 //NOTE: We have added the PORT we wanna use
+  // apiDevMode : true // Indicates development mode if true. Default is false
+  // apiLogger : require('restify-http-log') //defaults to using require('restify-pino-logger')()
 }
 
 //initialize your server by requiring HOT API

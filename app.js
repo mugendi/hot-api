@@ -42,23 +42,26 @@ module.exports = function(options){
   //ensure we have all needed values
   var diff = _.difference(neededOptions , _.keys(options));
 
-  if( !diff.length ){
+  //set optional vars
+  //set default or user Api Name
+  apiName = options.apiName || apiName;
+  apiPort = options.apiPort || apiPort;
+  apiDevMode = options.apiDevMode || apiDevMode;
 
+  //some logger options
+  loggerOpts = {
+    name: apiName,
+    safe: false,
+    serializers: {}
+  };
+
+  //initialize API User's Logger
+  apiLogger = options.apiLogger || pinoLogger( loggerOpts, pinoPretty ) ;
+
+  //if Missing Parameters
+  if( !diff.length ){
     //load routes on startup
     apiDir = options.apiDir;
-    apiName = options.apiName || apiName;
-    apiPort = options.apiPort || apiPort;
-    apiDevMode = options.apiDevMode || apiDevMode;
-
-    //some logger options
-    loggerOpts = {
-      name: apiName,
-      safe: false,
-      serializers: {}
-    };
-
-    apiLogger = options.apiLogger || pinoLogger( loggerOpts, pinoPretty ) ;
-
     //use fs.statSync to throw error if path does not exist
     if(  ( stat = fs.statSync(apiDir) ) && stat.isDirectory() ){
       //ok initialize now
@@ -352,6 +355,7 @@ function watchDir(DIR){
  * @param  {[type]} error [description]
  */
 function logErrorExit(error) {
+  console.log(loggerOpts)
   pinoLogger(loggerOpts, pinoPretty).logger.error(error);
   process.exit(1);
 }
