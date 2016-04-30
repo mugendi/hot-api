@@ -29,9 +29,13 @@ var server = {
   '/hello/:name'  : {
     methods : {
       get : function (req, res, next) {
-        res.send('hello ' + req.params.name);
+
         console.log('now');
-        next();
+
+        // req.log.info('something else')
+
+        res.send('hello ' + req.params.name);
+        // next();
       }
     },
     middleware: {

@@ -23,7 +23,8 @@ var apiName = 'My Fancy API Server';
 var options = {
   apiDir : apiDir,
   apiName : apiName,
-  apiPort : 8082
+  apiPort : 8082,
+  // apiLogger : require('restify-http-log') //defaults to using require('restify-pino-logger')()
 }
 
 //initialize your server by requiring HOT API

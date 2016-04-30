@@ -4,7 +4,7 @@ A fast API module written on top of Restify. Structured to be easy, extensible a
 ## API's that KISS
 We like to think that in a world such as this, where microservices and real time sites consume from API's, then such API's should be easy to roll out, cheap and effective.
 
-This is one expample that attempts to KISS (Keep it simple-stupid) and In under 30 minutes, you will have your API ready. With Live Reloading. **Try It!**
+This is one expample that attempts to KISS (Keep it simple-stupid) and In under 15 minutes, you will have your API ready. With Live Reloading. **Try It!**
 
 ##Start with
 

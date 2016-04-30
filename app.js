@@ -9,6 +9,12 @@ var watch = require('watch');
 var fs = require('fs');
 var clearRequire = require('clear-require');
 
+//loggers
+var pino = require('pino');
+var pinoPretty = pino.pretty();
+pinoPretty.pipe(process.stdout);
+var pinoLogger = require('restify-pino-logger');
+
 var server = {};
 var fileToLoad = '';
 var route = '';
@@ -16,6 +22,7 @@ var MONITOR = null;
 
 var apiDir = null;
 var apiDirExists = false;
+var apiLogger = null;
 var apiName = 'Hot Api Server';
 var apiPort = 8080;
 var pluginsARR;
@@ -32,10 +39,20 @@ module.exports = function(options){
   var diff = _.difference(neededOptions , _.keys(options));
 
   if( !diff.length ){
+
     //load routes on startup
     apiDir = options.apiDir;
     apiName = options.apiName || apiName;
     apiPort = options.apiPort || apiPort;
+
+    //some logger options
+    var loggerOpts = {
+      name: apiName,
+      safe: false,
+      serializers: {}
+    };
+
+    apiLogger = options.apiLogger || pinoLogger( loggerOpts, pinoPretty ) ;
 
     //use fs.statSync to throw error if path does not exist
     if(  ( stat = fs.statSync(apiDir) ) && stat.isDirectory() ){
@@ -195,6 +212,9 @@ function loadRoutes(APIDir, APIName, reload){
   //create server
   server = restify.createServer();
   if(reload){ start(pluginsARR, reload); }
+
+  //set logger
+  server.use(apiLogger);
 
 }
 
