@@ -153,8 +153,11 @@ function loadRoutes(APIDir, APIName, reload){
               //loop thru the exported object of methods
               _.each(RF, function(routeData, route){
 
-                middleWare.before = _.union(middleWare.before,  arrify( _.values(routeData.middleware.before) ));
-                middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));
+                if(_.has(routeData,'middleware')){
+                  middleWare.before = _.union(middleWare.before,  arrify( _.values(routeData.middleware.before) ));
+                  middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));  
+                }
+
 
                 // console.log(middleWare);
 
@@ -182,7 +185,7 @@ function loadRoutes(APIDir, APIName, reload){
 
       //watch routes now
       watchDir(apiDir);
-      
+
     }
 
   });
