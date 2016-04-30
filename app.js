@@ -146,24 +146,30 @@ function loadRoutes(APIDir, APIName, reload){
 
             //only load js files
             if(file.split('.').pop()=='js'){
-              // console.log(fileToLoad)
+              console.log(fileToLoad)
               //Load Route File
               var RF = _.clone( require(fileToLoad) );
               //to enable updates on reload, we must clear this require
-              clearRequire(fileToLoad);
+              // clearRequire(fileToLoad);
 
               if(_.has(RF,'$GLOBALS$')){
                 //GLOBALS
                 globals = RF['$GLOBALS$'];
                 //remove special $GLOBALS$ key
                 delete RF['$GLOBALS$'];
+
+                var middleWare = {
+                  before : arrify( _.values(globals.middleware.before) ),
+                  after : arrify( _.values(globals.middleware.after) )
+                };
+
               }
-
-
-              var middleWare = {
-                before : arrify( _.values(globals.middleware.before) ),
-                after : arrify( _.values(globals.middleware.after) )
-              };
+              else{
+                var middleWare = {
+                  before : [],
+                  after : []
+                };
+              }
 
               // console.log(middleWare);
 
@@ -174,7 +180,6 @@ function loadRoutes(APIDir, APIName, reload){
                   middleWare.before = _.union(middleWare.before,  arrify( _.values(routeData.middleware.before) ));
                   middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));
                 }
-
 
                 // console.log(middleWare);
 
