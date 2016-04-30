@@ -25,7 +25,7 @@ var path = require('path');
   HOT API will traverse the structure and load all routes
 */
 
-var apiDir = path.join(__dirname,'versions');
+var apiDir = path.join(__dirname,'API DIRECTORY');
 //Name your API
 var apiName = 'My Fancy API Server';
 
@@ -51,5 +51,3 @@ app.start(pluginsArr);
 
 
 ```
-
-

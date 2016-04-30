@@ -20,7 +20,9 @@ var apiName = 'My Fancy API Server';
 
 //initialize your server by requiring HOT API
 //Save the return value into a variable (app), you will need this variable to load your plugins
-var app = require('hot-api')(apiDir, apiName);
+// var app = require('hot-api')(apiDir, apiName);
+
+var app = require('./app')(apiDir, apiName);
 
 //place your plugins in an array. Use app variable above to access the restify & server objects
 var pluginsArr = [
