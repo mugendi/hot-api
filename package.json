@@ -1,6 +1,6 @@
 {
   "name": "hot-api",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A fast API implementation pattern written on top of Restify. Structured to be easy, extensible and allow for rapid (HOT/LIVE) reloading of routes.",
   "main": "app.js",
   "scripts": {
