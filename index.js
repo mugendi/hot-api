@@ -14,15 +14,21 @@ var path = require('path');
   HOT API will traverse the structure and load all routes
 */
 
+
 var apiDir = path.join(__dirname,'versions');
 //Name your API
 var apiName = 'My Fancy API Server';
 
+//we pass the values as an options object
+var options = {
+  apiDir : apiDir,
+  apiName : apiName,
+  apiPort : 8082
+}
+
 //initialize your server by requiring HOT API
 //Save the return value into a variable (app), you will need this variable to load your plugins
-// var app = require('hot-api')(apiDir, apiName);
-
-var app = require('./app')(apiDir, apiName);
+var app = require('./app')(options);
 
 //place your plugins in an array. Use app variable above to access the restify & server objects
 var pluginsArr = [

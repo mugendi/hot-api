@@ -29,9 +29,17 @@ var apiDir = path.join(__dirname,'API DIRECTORY');
 //Name your API
 var apiName = 'My Fancy API Server';
 
+//we pass the values as an options object
+//NOTE: While certain values (keys) are optional apiDir (apiOptions.apiDir) is not and must be entered and be a valid directory path
+var apiOptions = {
+  "apiDir" : apiDir,
+  "apiName" : apiName,
+  "apiPort" : 8082 //NOTE: We have added the PORT we wanna use
+}
+
 //initialize your server by requiring HOT API
 //Save the return value into a variable (app), you will need this variable to load your plugins
-var app = require('hot-api')(apiDir, apiName);
+var app = require('hot-api')(apiOptions);
 
 //place your plugins in an array. Use app variable above to access the restify & server objects
 var pluginsArr = [

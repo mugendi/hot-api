@@ -4,33 +4,62 @@ var dirTree = require('dir-tree');
 var _ = require('lodash');
 var util = require('util');
 var arrify = require('arrify');
-var exec = require('child_process').exec;
 var chalk = require('chalk');
 var watch = require('watch');
+var fs = require('fs');
+var clearRequire = require('clear-require');
 
 var server = {};
 var fileToLoad = '';
 var route = '';
+var MONITOR = null;
 
 var apiDir = null;
-var apiName = '';
+var apiDirExists = false;
+var apiName = 'Hot Api Server';
+var apiPort = 8080;
 var pluginsARR;
-var Reload = false;
+var port;
+
+var neededOptions = [ 'apiDir' ];
 
 
 
+//export function...
+module.exports = function(options){
+
+  //ensure we have all needed values
+  var diff = _.difference(neededOptions , _.keys(options));
+
+  if( !diff.length ){
+    //load routes on startup
+    apiDir = options.apiDir;
+    apiName = options.apiName || apiName;
+    apiPort = options.apiPort || apiPort;
+
+    //use fs.statSync to throw error if path does not exist
+    if(  ( stat = fs.statSync(apiDir) ) && stat.isDirectory() ){
+      //ok initialize now
+      initialize(apiDir, apiName );
+    }
+    else{
+      throw new Error( util.format("% does not exist or is not a Directory.", apiDir));
+    }
+
+  }
+  else{
+    throw new Error(
+      util.format("All required options not entered. Please complete the following options: %s", util.inspect(diff))
+    );
+  }
 
 
-module.exports = function(apiDir, apiName){
-
-  //load routes on startup
-  initialize(apiDir, apiName);
 
   return {
     restify : restify,
     server : server,
     start : start
-  }
+  };
 
 };
 
@@ -44,16 +73,15 @@ function initialize(APIDir, APIName, reload){
   reload = reload || false;
   apiName = APIName || 'API-SERVER';
   apiDir = APIDir;
-  Reload = reload;
 
   //set process name
   process.title = APIName ;
 
   //if Reload...
   if(reload){
-    console.log( chalk.white("\n----------------------------------------------------------") );
-    console.log( chalk.white("\tClosing Server & Reloading...") );
-    console.log( chalk.white("----------------------------------------------------------\n") );
+
+    logLined( 'gray', "EXCUSE! Need to refuel!" );
+    logLined( 'white', "Closing Server & Reloading..." );
 
     server.close(function(){
       loadRoutes(APIDir, APIName, reload);
@@ -77,8 +105,14 @@ function initialize(APIDir, APIName, reload){
  */
 function loadRoutes(APIDir, APIName, reload){
 
+
   // console.log(apiDir)
   dirTree(apiDir).then(function (tree) {
+    //This Directory indeed exists
+    apiDirExists = true;
+    var globals = {};
+
+    // console.log(tree)
 
     //if we have folders within the tree...
     if(_.size(tree)){
@@ -95,14 +129,19 @@ function loadRoutes(APIDir, APIName, reload){
 
             //only load js files
             if(file.split('.').pop()=='js'){
-              // console.log(file)
+              // console.log(fileToLoad)
               //Load Route File
-              var RF = require(fileToLoad);
+              var RF = _.clone( require(fileToLoad) );
+              //to enable updates on reload, we must clear this require
+              clearRequire(fileToLoad);
 
-              //GLOBALS
-              var globals = RF['$GLOBALS$'];
-              //remove special $GLOBALS$ key
-              delete RF['$GLOBALS$'];
+              if(_.has(RF,'$GLOBALS$')){
+                //GLOBALS
+                globals = RF['$GLOBALS$'];
+                //remove special $GLOBALS$ key
+                delete RF['$GLOBALS$'];
+              }
+
 
               var middleWare = {
                 before : arrify( _.values(globals.middleware.before) ),
@@ -122,11 +161,14 @@ function loadRoutes(APIDir, APIName, reload){
                 _.each(routeData.methods, function( func, method ){
                   route = util.format('/%s/%s', version, route ).replace(/\/{2,}/,'/');
 
-                  console.log( chalk.magenta("\tRoute " + chalk.bold(route) + " initialized.") );
+                  // console.log(route)
+
+                  log( chalk.magenta("Route " + chalk.bold(route) + " initialized.") );
                   //create server route
                   server[method](route, middleWare.before, func , middleWare.after  );
 
                 });
+
 
               });
 
@@ -138,11 +180,15 @@ function loadRoutes(APIDir, APIName, reload){
 
       });
 
+      //watch routes now
+      watchDir(apiDir);
+      
     }
 
   });
 
 
+// throw new Error( util.format("%s does not exist!", apiDir ))
   //create server
   server = restify.createServer();
   if(reload){ start(pluginsARR, reload); }
@@ -159,63 +205,78 @@ function start(pluginsArr, reload){
   reload = reload || false;
   pluginsARR = pluginsARR || pluginsArr;
 
+  logLined( 'gray', "AHEM! We're launching. Belt Up!" );
   //plugins
   // set server plugins
-  console.log( chalk.blue("\n----------------------------------------------------------") );
-  console.log( chalk.blue("\tSetting Plugins...") );
-  console.log( chalk.blue("----------------------------------------------------------\n") );
+  logLined( 'blue', "Setting Plugins..." );
 
   _.each(pluginsARR, function(plugin){
-    console.log(chalk.blue( util.format("\tPlugin: %s" , chalk.bold(plugin.name) )));
+    log(chalk.blue( util.format("Plugin: %s set." , chalk.bold(plugin.name) )));
     server.use(plugin);
   });
 
-  console.log( chalk.blue("\n----------------------------------------------------------\n") );
 
   //start listening
-  server.listen(8080, function() {
-
-    console.log( chalk.green("\n----------------------------------------------------------") );
-    console.log( chalk.green( util.format( "\t%s listening at %s", chalk.bold(process.title) , server.url) ));
-    console.log( chalk.green("----------------------------------------------------------\n") );
-
-    console.log( chalk.magenta("\n----------------------------------------------------------") );
-    console.log( chalk.magenta("\tInitializing your routes...") );
-    console.log( chalk.magenta("----------------------------------------------------------\n") );
-
+  server.listen( apiPort, function() {
+    logLined( 'green', util.format( "%s: Now listening at %s", chalk.bold(process.title) ,chalk.bold( server.url) ));
+    logLined( 'magenta', "Initializing your routes..." );
   });
 
 }
 
+
+
+
+
+
+
+//Some log beautification. Nothing too fancy!
+
+function logLined(color,msg){
+  color = color || 'gray';
+  msg = msg || ' ';
+
+  var chars = 70;
+  var l = _.repeat("-", chars);
+  var pad = Math.abs((chars - msg.length)/2);
+
+  // console.log( chalk[color]("\n" + l) );
+  console.log("\n");
+  console.log( chalk[color]( msg.toUpperCase() ) );
+  console.log( chalk[color]( l + "") );
+
+}
+
+function log(msg){
+  // var pad = Math.abs((chars - msg.length)/2);
+  var pad = 1;
+  console.log(  _.repeat(' ', pad ) + chalk.gray("~ ") + msg );
+}
 
 /**
  * reload API Server
  */
-function reloadServer(){
+function reloadServer(f, stat){
   initialize(apiDir, apiName, true);
 }
 
 
-
 //Watch file changes on API Directory
-//Uses Interval to ensure apiDir is set
-var interval = setInterval(function(){
+function watchDir(DIR){
 
-  if(apiDir){
+  logLined( 'gray', "Watching API routes for changes on: " + chalk.bold(DIR) );
 
-    console.log( chalk.gray("\n----------------------------------------------------------") );
-    console.log( chalk.gray("\tWatching API Routes On :" + apiDir) );
-    console.log( chalk.gray("----------------------------------------------------------\n") );
-
-    watch.createMonitor(apiDir, function (monitor) {
-      //  monitor.files['/home/mikeal/.zshrc'] // Stat object for my zshrc.
-       monitor.on("created", reloadServer);
-       monitor.on("changed", reloadServer);
-       monitor.on("removed", reloadServer);
-      //  monitor.stop(); // Stop watching
-    });
-
-    clearInterval(interval);
+  if(MONITOR){
+    MONITOR.stop(); // Stop watching
   }
 
-},1000)
+
+  watch.createMonitor(DIR, function (monitor) {
+    MONITOR = monitor;
+    //  monitor.files['/home/mikeal/.zshrc'] // Stat object for my zshrc.
+     monitor.on("created", reloadServer);
+     monitor.on("changed", reloadServer);
+     monitor.on("removed", reloadServer);
+  });
+
+}
