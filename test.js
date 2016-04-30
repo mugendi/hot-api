@@ -24,6 +24,7 @@ var options = {
   apiDir : apiDir,
   apiName : apiName,
   apiPort : 8082,
+  // apiDevMode : true // Indicates development mode if true. Default is false
   // apiLogger : require('restify-http-log') //defaults to using require('restify-pino-logger')()
 }
 

@@ -15,6 +15,10 @@ var pino = require('pino');
 var pinoPretty = pino.pretty();
 pinoPretty.pipe(process.stdout);
 var pinoLogger = require('restify-pino-logger');
+var loggerOpts = {};
+
+//MiddleWares
+var devMiddlewares = devMiddlewares();
 
 var server = {};
 var fileToLoad = '';
@@ -26,12 +30,11 @@ var apiDirExists = false;
 var apiLogger = null;
 var apiName = 'Hot Api Server';
 var apiPort = 8080;
+var apiDevMode = false;
 var pluginsARR;
 var port;
 
 var neededOptions = [ 'apiDir' ];
-
-
 
 //export function...
 module.exports = function(options){
@@ -45,9 +48,10 @@ module.exports = function(options){
     apiDir = options.apiDir;
     apiName = options.apiName || apiName;
     apiPort = options.apiPort || apiPort;
+    apiDevMode = options.apiDevMode || apiDevMode;
 
     //some logger options
-    var loggerOpts = {
+    loggerOpts = {
       name: apiName,
       safe: false,
       serializers: {}
@@ -61,14 +65,16 @@ module.exports = function(options){
       initialize(apiDir, apiName );
     }
     else{
-      throw new Error( util.format("% does not exist or is not a Directory.", apiDir));
+      var error = new Error( util.format("% does not exist or is not a Directory.", apiDir));
+      logErrorExit(error);
     }
 
   }
   else{
-    throw new Error(
+    var error = new Error(
       util.format("All required options not entered. Please complete the following options: %s", util.inspect(diff))
     );
+    logErrorExit(error);
   }
 
 
@@ -99,7 +105,7 @@ function initialize(APIDir, APIName, reload){
   if(reload){
 
     logLined( 'gray', "EXCUSE! NEED TO REFUEL!" );
-    logLined( 'white', "CLOSING SERVER & RELOADING..." );
+    logLined( 'white', "CLOSING SERVER & RELOADING..." + (apiDevMode ? '':" WAITING FOR ALL CONNECTIONS TO CLOSE...") );
 
     server.close(function(){
       loadRoutes(APIDir, APIName, reload);
@@ -123,12 +129,25 @@ function initialize(APIDir, APIName, reload){
  */
 function loadRoutes(APIDir, APIName, reload){
 
-
   // console.log(apiDir)
-  dirTree(apiDir).then(function (tree) {
+  dirTree(apiDir)
+  .then(function (tree) {
     //This Directory indeed exists
     apiDirExists = true;
     var globals = {};
+
+    var MIDDLEWARE = {
+      before : [],
+      after : []
+    };
+
+    if (apiDevMode) {
+      globals.middleware = {
+        before: [
+          devMiddlewares.closeConnection
+        ]
+      }
+    }
 
     // console.log(tree)
 
@@ -150,40 +169,42 @@ function loadRoutes(APIDir, APIName, reload){
               // console.log(fileToLoad)
               //Load Route File
               try{ var RF = _.clone( require(fileToLoad) ); }
-              catch(e){ console.error(e); }
+              catch(e){ pinoLogger(loggerOpts, pinoPretty).logger.error(e); }
               //to enable updates on reload, we must clear this require
               // clearRequire(fileToLoad);
 
-              if(_.has(RF,'$GLOBALS$')){
-                //GLOBALS
-                globals = RF['$GLOBALS$'];
-                //remove special $GLOBALS$ key
-                delete RF['$GLOBALS$'];
-
-                var middleWare = {
+              if(_.has(globals,'middleware')){
+                MIDDLEWARE = {
                   before : arrify( _.values(globals.middleware.before) ),
                   after : arrify( _.values(globals.middleware.after) )
                 };
-
-              }
-              else{
-                var middleWare = {
-                  before : [],
-                  after : []
-                };
               }
 
-              // console.log(middleWare);
+              // console.log(MIDDLEWARE);
+
+              if(_.has(RF,'$GLOBALS$')){
+                //GLOBALS
+                var GLOBALS = RF['$GLOBALS$'];
+                //remove special $GLOBALS$ key
+                delete RF['$GLOBALS$'];
+
+                MIDDLEWARE.before = _.union(MIDDLEWARE.before,  arrify( _.values(GLOBALS.middleware.before) ));
+                MIDDLEWARE.after = _.union(MIDDLEWARE.after,  arrify( _.values(GLOBALS.middleware.after) ));
+
+              }
+
+
+              // console.log(MIDDLEWARE);
 
               //loop thru the exported object of methods
               _.each(RF, function(routeData, route){
 
                 if(_.has(routeData,'middleware')){
-                  middleWare.before = _.union(middleWare.before,  arrify( _.values(routeData.middleware.before) ));
-                  middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));
+                  MIDDLEWARE.before = _.union(MIDDLEWARE.before,  arrify( _.values(routeData.middleware.before) ));
+                  MIDDLEWARE.after = _.union(MIDDLEWARE.after,  arrify( _.values(routeData.middleware.after) ));
                 }
 
-                // console.log(middleWare);
+                // console.log(MIDDLEWARE);
 
                 _.each(routeData.methods, function( func, method ){
                   // route =
@@ -204,7 +225,7 @@ function loadRoutes(APIDir, APIName, reload){
 
                   // console.log(path);
                   //create server route
-                  server[method](path , middleWare.before, func , middleWare.after  );
+                  server[method](path , MIDDLEWARE.before, func , MIDDLEWARE.after  );
 
                 });
 
@@ -224,6 +245,9 @@ function loadRoutes(APIDir, APIName, reload){
 
     }
 
+  })
+  .catch(function(err) {
+    logErrorExit(err);
   });
 
 
@@ -321,4 +345,32 @@ function watchDir(DIR){
      monitor.on("removed", reloadServer);
   });
 
+}
+
+/**
+ * [logErrorExit description]
+ * @param  {[type]} error [description]
+ */
+function logErrorExit(error) {
+  pinoLogger(loggerOpts, pinoPretty).logger.error(error);
+  process.exit(1);
+}
+
+function devMiddlewares () {
+
+  /**
+   * [closeConnection description]
+   * @param  {[type]}   req  [description]
+   * @param  {[type]}   res  [description]
+   * @param  {Function} next [description]
+   * @return {[type]}        [description]
+   */
+  function closeConnection(req, res, next) {
+    res.setHeader('connection', 'close');
+    next();
+  }
+
+  return {
+    closeConnection: closeConnection
+  };
 }
