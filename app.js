@@ -149,7 +149,8 @@ function loadRoutes(APIDir, APIName, reload){
             if(file.split('.').pop()=='js'){
               // console.log(fileToLoad)
               //Load Route File
-              var RF = _.clone( require(fileToLoad) );
+              try{ var RF = _.clone( require(fileToLoad) ); }
+              catch(e){ console.error(e); }
               //to enable updates on reload, we must clear this require
               // clearRequire(fileToLoad);
 
