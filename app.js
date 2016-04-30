@@ -8,6 +8,7 @@ var chalk = require('chalk');
 var watch = require('watch');
 var fs = require('fs');
 var clearRequire = require('clear-require');
+var semver = require('semver');
 
 //loggers
 var pino = require('pino');
@@ -146,7 +147,7 @@ function loadRoutes(APIDir, APIName, reload){
 
             //only load js files
             if(file.split('.').pop()=='js'){
-              console.log(fileToLoad)
+              // console.log(fileToLoad)
               //Load Route File
               var RF = _.clone( require(fileToLoad) );
               //to enable updates on reload, we must clear this require
@@ -184,13 +185,25 @@ function loadRoutes(APIDir, APIName, reload){
                 // console.log(middleWare);
 
                 _.each(routeData.methods, function( func, method ){
-                  route = util.format('/%s/%s', version, route ).replace(/\/{2,}/,'/');
+                  // route =
 
                   // console.log(route)
 
                   log( chalk.magenta("Route " + chalk.bold(route) + " Initialized.") );
+
+                  var path = util.format('/%s/%s', version, route ).replace(/\/{2,}/,'/');
+
+
+
+                  if(semver.valid(version) !== null ){
+                    path = {
+                      path:route, version:version
+                    }
+                  }
+
+                  // console.log(path);
                   //create server route
-                  server[method](route, middleWare.before, func , middleWare.after  );
+                  server[method](path , middleWare.before, func , middleWare.after  );
 
                 });
 

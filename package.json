@@ -18,6 +18,7 @@
     "pino": "^2.2.0",
     "restify": "^4.0.4",
     "restify-pino-logger": "^1.0.1",
+    "semver": "^5.1.0",
     "split2": "^2.0.1",
     "watch": "^0.18.0"
   },
