@@ -80,8 +80,8 @@ function initialize(APIDir, APIName, reload){
   //if Reload...
   if(reload){
 
-    logLined( 'gray', "EXCUSE! Need to refuel!" );
-    logLined( 'white', "Closing Server & Reloading..." );
+    logLined( 'gray', "EXCUSE! NEED TO REFUEL!" );
+    logLined( 'white', "CLOSING SERVER & RELOADING..." );
 
     server.close(function(){
       loadRoutes(APIDir, APIName, reload);
@@ -155,7 +155,7 @@ function loadRoutes(APIDir, APIName, reload){
 
                 if(_.has(routeData,'middleware')){
                   middleWare.before = _.union(middleWare.before,  arrify( _.values(routeData.middleware.before) ));
-                  middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));  
+                  middleWare.after = _.union(middleWare.after,  arrify( _.values(routeData.middleware.after) ));
                 }
 
 
@@ -166,7 +166,7 @@ function loadRoutes(APIDir, APIName, reload){
 
                   // console.log(route)
 
-                  log( chalk.magenta("Route " + chalk.bold(route) + " initialized.") );
+                  log( chalk.magenta("Route " + chalk.bold(route) + " Initialized.") );
                   //create server route
                   server[method](route, middleWare.before, func , middleWare.after  );
 
@@ -208,10 +208,10 @@ function start(pluginsArr, reload){
   reload = reload || false;
   pluginsARR = pluginsARR || pluginsArr;
 
-  logLined( 'gray', "AHEM! We're launching. Belt Up!" );
+  logLined( 'gray', "AHEM! WE'RE LAUNCHING. BELT UP!" );
   //plugins
   // set server plugins
-  logLined( 'blue', "Setting Plugins..." );
+  logLined( 'blue', "SETTING PLUGINS..." );
 
   _.each(pluginsARR, function(plugin){
     log(chalk.blue( util.format("Plugin: %s set." , chalk.bold(plugin.name) )));
@@ -221,8 +221,8 @@ function start(pluginsArr, reload){
 
   //start listening
   server.listen( apiPort, function() {
-    logLined( 'green', util.format( "%s: Now listening at %s", chalk.bold(process.title) ,chalk.bold( server.url) ));
-    logLined( 'magenta', "Initializing your routes..." );
+    logLined( 'green', util.format( "%s: NOW LISTENING AT %s", chalk.bold(process.title) ,chalk.bold( server.url) ));
+    logLined( 'magenta', "INITIALIZING YOUR ROUTES..." );
   });
 
 }
@@ -245,7 +245,7 @@ function logLined(color,msg){
 
   // console.log( chalk[color]("\n" + l) );
   console.log("\n");
-  console.log( chalk[color]( msg.toUpperCase() ) );
+  console.log( chalk[color]( msg ) );
   console.log( chalk[color]( l + "") );
 
 }
@@ -267,7 +267,7 @@ function reloadServer(f, stat){
 //Watch file changes on API Directory
 function watchDir(DIR){
 
-  logLined( 'gray', "Watching API routes for changes on: " + chalk.bold(DIR) );
+  logLined( 'gray', "WATCHING API ROUTES FOR CHANGES ON: " + chalk.bold(DIR) );
 
   if(MONITOR){
     MONITOR.stop(); // Stop watching
