@@ -1,12 +1,12 @@
 {
-  "name": "api",
+  "name": "hot-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "A fast API module written on top of Restify. Structured to be easy, extensible and allow for rapid (HOT/LIVE) reloading of routes.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Anthony Mugendi",
   "license": "MIT",
   "dependencies": {
     "arrify": "^1.0.1",
@@ -16,5 +16,14 @@
     "path": "^0.12.7",
     "restify": "^4.0.4",
     "watch": "^0.18.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mugendi/hot-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mugendi/hot-api/issues"
+  },
+  "homepage": "https://github.com/mugendi/hot-api#readme"
 }
