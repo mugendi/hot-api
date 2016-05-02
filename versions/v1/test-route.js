@@ -9,7 +9,7 @@ var server = {
       //runs before request is processed
       before: {
         auth : function(req,res,next){
-          console.log('before');
+          req.log.info('auth');
           next();
         }
       },
@@ -17,7 +17,7 @@ var server = {
       //runs after request is processed
       after: {
         anotherGlobalMiddleware : function(req,res,next){
-          console.log('after');
+          req.log.info('anotherGlobalMiddleware');
           next();
         }
       }
@@ -26,45 +26,14 @@ var server = {
   },
 
   // Route
-  '/hello/:name'  : {
+  '/hello'  : {
+    name : 'GET_Hello',
     methods : {
       get : function (req, res, next) {
 
-        console.log('now');
+        req.log.debug('This is a debug Message')
 
-        // req.log.info('something else')
-
-        res.send('hello ' + req.params.name);
-        // next();
-      }
-    },
-    middleware: {
-
-      //runs before request is processed
-      before: {
-        routeSpecificMiddleware : function(req,res,next){
-          console.log('before');
-          next();
-        }
-      },
-
-      //runs after request is processed
-      after: {
-        routeSpecificMiddleware : function(req,res,next){
-          console.log('after');
-          next();
-        }
-      }
-
-    }
-
-  },
-
-  '/logout'  : {
-    methods : {
-      get : function (req, res, next) {
-        res.send('hello ' + req.params.name);
-        console.log('now');
+        res.send('Hello & Welcome to '+ this.name);
         next();
       }
     },
@@ -73,7 +42,7 @@ var server = {
       //runs before request is processed
       before: {
         routeSpecificMiddleware : function(req,res,next){
-          console.log('before');
+          req.log.info('routeSpecificMiddleware');
           next();
         }
       },
@@ -81,7 +50,7 @@ var server = {
       //runs after request is processed
       after: {
         routeSpecificMiddleware : function(req,res,next){
-          console.log('after');
+          req.log.info('routeSpecificMiddleware');
           next();
         }
       }
