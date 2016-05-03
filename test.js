@@ -22,11 +22,12 @@ var apiName = 'My Fancy API Server';
 //we pass the values as an options object
 var options = {
   apiDir : apiDir,
-  apiName : apiName,
+  apiName : 'My Fancy API Server',
   apiPort : 8082,
-  // apiDevMode : true // Indicates development mode if true. Default is false
-  // apiVerbosity : 2 //defaults to using require('restify-pino-logger')()
-  //
+  // apiDevMode : true, // Indicates development mode if true. Default is false
+  // apiLogDir : './logs', //location where Bunyan should write its physical logs. Defaults to "App Directory/logs"
+  // apiVerbosity : 1, //determines how much details are output via the route logger. Defaults to 1 and has three possible values (0=logging off, 1=medium verbosity, 2=max verbosity)
+  // apiServerOpts : {} //other restify server options
 }
 
 //initialize your server by requiring HOT API

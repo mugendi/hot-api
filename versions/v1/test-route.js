@@ -1,5 +1,5 @@
 
-var server = {
+var route = {
 
   //Global middlewares are applied to all exported routes
   '$GLOBALS$' : {
@@ -63,4 +63,4 @@ var server = {
 
 
 //export route
-module.exports = server;
+module.exports = route;
