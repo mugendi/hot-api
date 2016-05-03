@@ -2,7 +2,7 @@
 # hot-api
 A fast API module written on top of Restify. Structured to be easy, extensible and allow for rapid (HOT/LIVE) reloading of routes.
 
-*If running a version below 0.0.7, please update to 0.0.8 and above!*
+**If running a version below 0.0.7, please update to 0.0.8 and above!**
 
 ## API's that KISS
 We like to think that in a world such as this, where microservices and real time sites consume from API's, then such API's should be easy to roll out, cheap and effective.
