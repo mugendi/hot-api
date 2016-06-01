@@ -6,3 +6,5 @@ res
 *.zip
 *.txt
 .skip
+*.ini
+*.ico
